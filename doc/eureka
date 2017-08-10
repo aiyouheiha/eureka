@@ -1,0 +1,47 @@
+#!/bin/bash
+
+PROJECT_NAME=eureka
+
+if [ $# != 1 ]; then
+    echo “parem number error, should have one and only one”
+    exit
+fi
+
+function java_start() {
+    JAVA_MEM_OPTS=""
+    BITS=`java -version 2>&1 | grep -i 64-bit`
+    if [ -n "$BITS" ]; then
+        JAVA_MEM_OPTS=" -Xmx128m -Xms64m -Xmn64m -XX:PermSize=64m -XX:+UseG1GC "
+    else
+        JAVA_MEM_OPTS=" -Xms64m -Xmx128m -XX:PermSize=64m -XX:+UseG1GC "
+    fi
+    if [ ! -d ./logs ]; then
+        echo "mkdir logs"
+        mkdir logs
+    fi
+    STDOUT_FILE=./logs/${PROJECT_NAME}.log
+    nohup java  $JAVA_MEM_OPTS -jar ${PROJECT_NAME}.jar > $STDOUT_FILE 2>&1 &
+    echo "java run ..."
+}
+
+
+function start() { 
+    echo "$PROJECT_NAME start"
+    java_start
+}
+
+function restart() {
+    echo "$PROJECT_NAME restart"
+}
+
+
+if [ $1 == "start" ]; then
+    start
+elif [ $1 == "restart" ]; then
+    restart
+else
+    echo "unknown option"
+fi
+
+
+
